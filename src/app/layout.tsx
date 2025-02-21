@@ -7,6 +7,7 @@ import { WalletProvider } from "@/provider/WalletProvider";
 import { Toaster } from "@/components/ui/toaster";
 import NavBar from "@/components/modules/nav-bar";
 import { getSession } from "@/lib/auth";
+import { HeroUIProvider } from "@heroui/react";
 
 const mFont = FontSans({
   subsets: ["latin"],
@@ -15,7 +16,7 @@ const mFont = FontSans({
 
 export const metadata: Metadata = {
   title: "Mooner Money",
-  description: "Pool Money; Trade Whatever"
+  description: "Pool Money; Trade Whatever",
 };
 
 export default async function RootLayout({
@@ -24,20 +25,16 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getSession();
-  // if (typeof window !== "undefined") {
-  //   scan({
-  //     enabled: true,
-  //     log: true,
-  //   });
-  // }
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${mFont.className} antialiased`}>
+      <body className={`${mFont.className} antialiased overflow-x-hidden`}>
         <WalletProvider>
           <RootLayoutProvider session={session}>
-            <NavBar />
-            {children}
-            <Toaster />
+            <HeroUIProvider>
+              <NavBar />
+              <div className="w-full bg-background px-1 mt-6">{children}</div>
+              <Toaster />
+            </HeroUIProvider>
           </RootLayoutProvider>
         </WalletProvider>
       </body>

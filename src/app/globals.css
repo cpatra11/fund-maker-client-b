@@ -1,6 +1,52 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Gilroy-Black";
+  font-style: normal;
+  font-weight: 1000;
+  font-display: swap;
+  src: url("/fonts/Gilroy-Black.ttf") format("ttf");
+}
+@font-face {
+  font-family: "Gilroy-Bold";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("/fonts/Gilroy-Bold.ttf") format("ttf");
+}
+@font-face {
+  font-family: "Gilroy-Semibold";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("/fonts/Gilroy-Semi-Bold.ttf") format("ttf");
+}
+@font-face {
+  font-family: "Gilroy-Regular";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/Gilroy-Regular.ttf") format("ttf");
+}
 
 @theme {
+  --font-gblack: "Gilroy-Black", sans-serif;
+  --font-gbold: "Gilroy-Bold", sans-serif;
+  --font-gsemibold: "Gilroy-Semibold", sans-serif;
+  --font-gregular: "Gilroy-Regular", sans-serif;
+  --color-mint-green-50: #edffe5;
+  --color-mint-green-100: #d5ffc8;
+  --color-mint-green-200: #afff99;
+  --color-mint-green-300: #7afb5b;
+  --color-mint-green-400: #4ef229;
+  --color-mint-green-500: #2cd80a;
+  --color-mint-green-550: #60c844;
+  --color-mint-green-600: #1dad03;
+  --color-mint-green-700: #188308;
+  --color-mint-green-800: #19670d;
+  --color-mint-green-900: #175710;
+  --color-mint-green-950: #053102;
+
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
 
@@ -70,7 +116,7 @@
   }
 
   /* Firefox */
-  input[type='number'] {
+  input[type="number"] {
     -moz-appearance: textfield;
   }
 
@@ -85,7 +131,7 @@
   }
 }
 
-
+/* 
 @layer base {
   :root {
     --background: 0 0% 8%;
@@ -114,7 +160,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
-}
+} */
 
 @layer base {
   * {
@@ -124,7 +170,7 @@
   ::placeholder {
     @apply text-sm;
   }
-  
+
   body {
     @apply bg-background text-foreground;
   }
