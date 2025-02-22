@@ -63,13 +63,13 @@ const FundSlider = ({
 
   return (
     <section
-      className={`flex flex-col justify-start items-center gap-10 px-4 ${className}`}
+      className={`flex flex-col justify-start items-center gap-10 ${className}`}
     >
       <SectionHeading subheading={subheading}>{title}</SectionHeading>
       <div className={`relative w-full ${maxWidth} px-16`}>
         <div className="w-full overflow-hidden" ref={containerRef}>
           <motion.div
-            className="flex gap-6"
+            className="flex gap-14"
             drag="x"
             dragConstraints={containerRef}
             onDragEnd={handleDragEnd}
@@ -89,7 +89,7 @@ const FundSlider = ({
           </motion.div>
         </div>
         {currentIndex > 0 && (
-          <div className="absolute top-1/2 -translate-y-1/2 -left-4">
+          <div className="absolute top-1/2 -translate-y-1/2 -left-6">
             <CircularArrow
               direction="left"
               onClick={handlePrev}
@@ -100,7 +100,7 @@ const FundSlider = ({
           </div>
         )}
         {currentIndex < maxIndex && (
-          <div className="absolute top-1/2 -translate-y-1/2 -right-4">
+          <div className="absolute top-1/2 -translate-y-1/2 -right-6">
             <CircularArrow
               direction="right"
               onClick={handleNext}

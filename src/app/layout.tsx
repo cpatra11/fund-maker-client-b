@@ -7,7 +7,6 @@ import { WalletProvider } from "@/provider/WalletProvider";
 import { Toaster } from "@/components/ui/toaster";
 import NavBar from "@/components/modules/nav-bar";
 import { getSession } from "@/lib/auth";
-import { HeroUIProvider } from "@heroui/react";
 
 const mFont = FontSans({
   subsets: ["latin"],
@@ -30,11 +29,9 @@ export default async function RootLayout({
       <body className={`${mFont.className} antialiased overflow-x-hidden`}>
         <WalletProvider>
           <RootLayoutProvider session={session}>
-            <HeroUIProvider>
-              <NavBar />
-              <div className="w-full bg-background px-1 mt-6">{children}</div>
-              <Toaster />
-            </HeroUIProvider>
+            <NavBar />
+            <div className="w-full bg-background px-1 mt-6">{children}</div>
+            <Toaster />
           </RootLayoutProvider>
         </WalletProvider>
       </body>
