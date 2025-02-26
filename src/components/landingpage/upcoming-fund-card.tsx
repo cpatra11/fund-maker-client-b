@@ -11,8 +11,8 @@ const UpcomingFundCard = (props: UpcomingFundCardProps) => {
     <BaseFundCard
       {...props}
       statusLabel="COMING SOON"
-      statusColor="#FFA94F"
-      statusBgColor="rgba(255, 169, 79, 0.4)"
+      statusColor="#ff6b00"
+      statusBgColor="rgba(255, 107, 0, 0.1)"
     />
   );
 };

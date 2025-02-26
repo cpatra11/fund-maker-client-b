@@ -4,6 +4,7 @@ import Featured from "@/components/landingpage/featured";
 import FeaturedFunds from "@/components/landingpage/featured-funds";
 import UpcomingFunds from "@/components/landingpage/upcoming-funds";
 import LivePrice from "@/components/landingpage/live-price";
+import { Container } from "@/components/ui/container";
 
 const Home: React.FC = () => {
   return (
@@ -11,8 +12,10 @@ const Home: React.FC = () => {
       <Hero />
       <Featured /> {/* Cha-Ching Champion section */}
       <LivePrice />
-      <FeaturedFunds />
-      <UpcomingFunds />
+      <div className="w-full px-4">
+        <FeaturedFunds />
+        <UpcomingFunds />
+      </div>
     </>
   );
 };

@@ -10,8 +10,11 @@ interface FundCardProps {
 const FundCard = ({ image, symbol, name, status = "LIVE" }: FundCardProps) => {
   return (
     <motion.div
-      className="grow shrink basis-0 h-[400px] sm:h-[460px] md:h-[520px] pt-3 flex-col justify-end items-center inline-flex hover:cursor-pointer"
-      whileHover={{ y: -12 }}
+      className="grow shrink basis-0 h-[520px] sm:h-[580px] md:h-[640px] pt-3 flex-col justify-end items-center inline-flex hover:cursor-pointer z-10 overflow-visible rounded-2xl"
+      whileHover={{
+        y: -12,
+        zIndex: 20,
+      }}
       transition={{
         type: "tween",
         ease: "easeInOut",
@@ -19,7 +22,7 @@ const FundCard = ({ image, symbol, name, status = "LIVE" }: FundCardProps) => {
       }}
     >
       <div
-        className="w-full max-w-[300px] sm:max-w-[350px] md:max-w-[400px] h-[380px] sm:h-[440px] md:h-[500px] 
+        className="w-full max-w-[360px] sm:max-w-[440px] md:max-w-[520px] h-[500px] sm:h-[560px] md:h-[620px] 
                     relative bg-white rounded-2xl shadow-[0px_34px_44px_0px_rgba(0,0,0,0.04)] border-2 border-black/20 
                     flex flex-col justify-start items-start p-3 sm:p-4 gap-4 sm:gap-6 overflow-hidden"
       >

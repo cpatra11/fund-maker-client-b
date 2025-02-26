@@ -38,7 +38,9 @@ const UpcomingFunds = () => {
     const handleResize = () => {
       if (window.innerWidth < 640) {
         setItemsPerView(1);
-      } else if (window.innerWidth < 1024) {
+      } else if (window.innerWidth < 900) {
+        setItemsPerView(1.5);
+      } else if (window.innerWidth < 1200) {
         setItemsPerView(2);
       } else {
         setItemsPerView(3);
@@ -54,14 +56,14 @@ const UpcomingFunds = () => {
   return (
     <FundSlider
       title="Upcoming Funds"
-      subheading="Discover Future Opportunities"
+      subheading="Join the Waitlist"
       items={UPCOMING_FUNDS}
-      itemWidth="w-[400px]"
-      maxWidth="max-w-[1440px]"
+      itemWidth="w-full sm:w-[260px] md:w-[280px] lg:w-[300px]"
+      maxWidth="max-w-[60%] xl:max-w-[1000px]"
       itemsPerView={itemsPerView}
-      className="mt-25 mb-20"
+      className="mt-12 sm:mt-16 lg:mt-20 px-4 sm:px-6"
       renderItem={(fund) => (
-        <div className="px-3">
+        <div>
           <UpcomingFundCard {...fund} />
         </div>
       )}

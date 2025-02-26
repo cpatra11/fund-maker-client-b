@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 export interface BaseFundCardProps {
   image: string;
@@ -23,40 +24,48 @@ const BaseFundCard = ({
 }: BaseFundCardProps) => {
   return (
     <motion.div
-      className="grow shrink basis-0 h-[400px] sm:h-[460px] md:h-[520px] pt-3 flex-col justify-end items-center inline-flex hover:cursor-pointer"
-      whileHover={{ y: -12 }}
+      className="grow shrink basis-0 h-[200px] xs:h-[220px] sm:h-[260px] md:h-[300px] pt-2 sm:pt-3 flex-col justify-end items-center inline-flex hover:cursor-pointer rounded-xl sm:rounded-2xl overflow-visible w-full"
+      whileHover={{
+        y: -12,
+        boxShadow: "0px 34px 44px 0px rgba(0,0,0,0.08)",
+        zIndex: 20,
+      }}
       transition={{
         type: "tween",
         ease: "easeInOut",
         duration: 0.3,
       }}
     >
-      <div className="w-full max-w-[300px] sm:max-w-[350px] md:max-w-[400px] h-[380px] sm:h-[440px] md:h-[500px] relative bg-white rounded-2xl shadow-[0px_34px_44px_0px_rgba(0,0,0,0.04)] border-2 border-black/20 flex flex-col justify-start items-start p-3 sm:p-4 gap-4 sm:gap-6 overflow-hidden">
-        <img
-          className="w-full h-[200px] sm:h-[240px] md:h-[280px] rounded-xl object-cover"
+      <div className="w-full max-w-full xs:max-w-[280px] sm:max-w-[340px] md:max-w-[360px] lg:max-w-[380px] h-[180px] xs:h-[200px] sm:h-[240px] md:h-[280px] relative bg-white rounded-xl sm:rounded-2xl border border-black/20 flex flex-col justify-start items-start p-2 xs:p-2.5 sm:p-3 md:p-4 gap-1.5 xs:gap-2 overflow-hidden">
+        <Image
+          className="w-full h-[90px] xs:h-[110px] sm:h-[130px] md:h-[150px] rounded-lg sm:rounded-xl object-cover"
           src={image}
           alt={name}
+          height={200}
+          width={200}
         />
-        <div className="flex items-center justify-between w-full gap-2 sm:gap-3">
-          <div className="text-[#2b2b2b] text-2xl sm:text-3xl md:text-[42px] font-bold font-gbold leading-none">
-            ${symbol}
-          </div>
-          {statusLabel && (
-            <div
-              className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg"
-              style={{ backgroundColor: statusBgColor }}
-            >
-              <div
-                className="text-sm sm:text-base font-bold font-gbold"
-                style={{ color: statusColor }}
-              >
-                {statusLabel}
-              </div>
+        <div className="w-full flex flex-col gap-1">
+          <div className="flex items-center justify-between w-full gap-4 sm:gap-6">
+            <div className="text-[#2b2b2b] text-xl sm:text-2xl md:text-[32px] font-bold font-gbold leading-none">
+              ${symbol}
             </div>
-          )}
-        </div>
-        <div className="text-[#141414]/60 text-lg sm:text-xl md:text-2xl font-bold font-gsemibold">
-          {name}
+            {statusLabel && (
+              <div
+                className="px-2 py-0.5 rounded-lg"
+                style={{ backgroundColor: statusBgColor }}
+              >
+                <div
+                  className="text-[10px] sm:text-[11px] font-bold font-gsemibold uppercase whitespace-nowrap"
+                  style={{ color: statusColor }}
+                >
+                  {statusLabel}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="text-[#141414]/60 text-xs sm:text-sm md:text-base font-medium font-gsemibold">
+            {name}
+          </div>
         </div>
         {children}
       </div>

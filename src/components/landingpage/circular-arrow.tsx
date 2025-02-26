@@ -6,6 +6,7 @@ interface CircularArrowProps {
   progress: number;
   disabled?: boolean;
   progressColor?: string;
+  className?: string;
 }
 
 const CircularArrow: React.FC<CircularArrowProps> = ({
@@ -14,13 +15,14 @@ const CircularArrow: React.FC<CircularArrowProps> = ({
   progress,
   disabled,
   progressColor = "#374151",
+  className,
 }) => {
   const Icon = direction === "left" ? ArrowLeft : ArrowRight;
   const circumference = 2 * Math.PI * 22;
 
   return (
     <div
-      className="relative cursor-pointer"
+      className={`relative cursor-pointer ${className}`}
       onClick={!disabled ? onClick : undefined}
     >
       <div className="relative w-12 h-12">
