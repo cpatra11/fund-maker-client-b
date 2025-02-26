@@ -28,6 +28,10 @@ const FundSlider = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const controls = useAnimation();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartX = useRef(0);
+  const dragCurrentX = useRef(0);
+  const dragStartClientX = useRef(0);
   const totalItems = items.length;
   const progress = (currentIndex + Math.floor(itemsPerView)) / totalItems;
   const maxIndex = totalItems - Math.floor(itemsPerView);
@@ -62,6 +66,84 @@ const FundSlider = ({
     });
   };
 
+  // Handle drag start
+  const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault(); // Prevent default behavior
+    setIsDragging(true);
+
+    // Store current animation position
+    controls.stop();
+    // Use dragStartX.current instead of trying to get the current value from controls
+    dragStartX.current = calculateCardPosition(currentIndex);
+
+    // Get client X based on event type
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    dragCurrentX.current = clientX;
+    dragStartClientX.current = clientX;
+
+    window.addEventListener("mousemove", handleDragMove);
+    window.addEventListener("touchmove", handleDragMove, { passive: false });
+    window.addEventListener("mouseup", handleDragEnd);
+    window.addEventListener("touchend", handleDragEnd);
+  };
+
+  // Handle drag move
+  const handleDragMove = (e: MouseEvent | TouchEvent) => {
+    if (!isDragging) return;
+
+    // Prevent scroll while dragging
+    e.preventDefault();
+
+    // Get client X based on event type
+    const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
+    const deltaX = clientX - dragCurrentX.current;
+
+    // Update position during drag
+    controls.set({ x: dragStartX.current + deltaX });
+  };
+
+  // Handle drag end
+  const handleDragEnd = (e?: MouseEvent | TouchEvent) => {
+    if (!isDragging) return;
+    setIsDragging(false);
+
+    // Get client X based on event type - ensure e is defined
+    let totalDragDistance = 0;
+    if (e) {
+      const clientX =
+        "touches" in e
+          ? (e as TouchEvent).changedTouches?.[0]?.clientX
+          : (e as MouseEvent).clientX;
+
+      if (clientX) {
+        totalDragDistance = clientX - dragStartClientX.current;
+      }
+    }
+
+    const threshold = 50; // Minimum drag distance to trigger slide
+
+    // Determine which way to slide based on drag distance
+    if (Math.abs(totalDragDistance) > threshold) {
+      if (totalDragDistance > 0 && currentIndex > 0) {
+        handlePrev();
+      } else if (totalDragDistance < 0 && currentIndex < maxIndex) {
+        handleNext();
+      } else {
+        // Snap back to current position if at the end
+        controls.start({ x: calculateCardPosition(currentIndex) });
+      }
+    } else {
+      // If drag distance is small, snap back
+      controls.start({ x: calculateCardPosition(currentIndex) });
+    }
+
+    // Remove event listeners
+    window.removeEventListener("mousemove", handleDragMove);
+    window.removeEventListener("touchmove", handleDragMove);
+    window.removeEventListener("mouseup", handleDragEnd);
+    window.removeEventListener("touchend", handleDragEnd);
+  };
+
   useEffect(() => {
     const updatePosition = () => {
       controls.start({
@@ -73,7 +155,7 @@ const FundSlider = ({
 
     window.addEventListener("resize", updatePosition);
     return () => window.removeEventListener("resize", updatePosition);
-  }, [controls, currentIndex, itemsPerView]); // Stable dependency array
+  }, [controls, currentIndex, itemsPerView]);
 
   return (
     <section
@@ -88,14 +170,17 @@ const FundSlider = ({
 
         <div className="w-full relative z-[2] pb-16" ref={containerRef}>
           <motion.div
-            className="flex gap-4 sm:gap-5 lg:gap-6"
+            className="flex gap-4 sm:gap-5 lg:gap-6 cursor-grab active:cursor-grabbing touch-none"
             animate={controls}
             initial={{ x: 0 }}
             transition={{
               type: "tween",
               ease: "easeInOut",
-              duration: 0.5,
+              duration: 0.3,
             }}
+            style={{ touchAction: "none" }}
+            onMouseDown={handleDragStart}
+            onTouchStart={handleDragStart}
           >
             {items.map((item, index) => (
               <div key={index} className={`${itemWidth} flex-shrink-0`}>
