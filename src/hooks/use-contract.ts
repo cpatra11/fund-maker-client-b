@@ -5,6 +5,7 @@ import type { InputTransactionData } from "@aptos-labs/wallet-adapter-react";
 import { useToast } from "./use-toast";
 import { DaoData } from "@/validation/dao.validation";
 import { RESOURCES, TYPE_FUN_ARGUMENTS } from "@/constants/contract";
+import { useState } from "react";
 
 interface IDaoData extends DaoData {
   merkle?: { root: string; proof: string; limit: string };
@@ -13,6 +14,11 @@ interface IDaoData extends DaoData {
 const useContract = () => {
   const { toast } = useToast();
   const { signAndSubmitTransaction, connected } = useWallet();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const MODULE_ADDRESS = process.env.NEXT_PUBLIC_MODULE_ADDRESS;
+  const MODULE_NAME = process.env.NEXT_PUBLIC_MODULE_NAME || "moonner_dao";
 
   const executeTransaction = async (
     funString: MoveStructId,
@@ -108,6 +114,62 @@ const useContract = () => {
     )) as TransactionData;
   };
 
+  const createDaoOnBlockchain = async (data: {
+    name: string;
+    ticker: string;
+    description: string;
+    daoId: string;
+  }) => {
+    if (!MODULE_ADDRESS) {
+      setError("Module address not configured");
+      return null;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await signAndSubmitTransaction({
+        type: "entry_function_payload",
+        function: `${MODULE_ADDRESS}::${MODULE_NAME}::create_dao`,
+        type_arguments: [],
+        arguments: [data.name, data.ticker, data.description, data.daoId],
+      });
+
+      // Wait for transaction confirmation
+      const txnResult = await checkTransaction(response.hash);
+      return txnResult;
+    } catch (err) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Failed to create DAO on blockchain";
+      setError(message);
+      toast({
+        title: "Transaction Failed",
+        description: message,
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const checkTransaction = async (hash: string) => {
+    try {
+      const response = await fetch(`/api/transaction/${hash}`);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to check transaction");
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error checking transaction:", error);
+      throw error;
+    }
+  };
+
   return {
     executeTransaction,
     createDao,
@@ -115,6 +177,9 @@ const useContract = () => {
     joinDaoVip,
     startTrading,
     endWhitelist,
+    createDaoOnBlockchain,
+    isLoading,
+    error,
   };
 };
 

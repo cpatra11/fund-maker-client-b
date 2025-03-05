@@ -1,193 +1,132 @@
-import React, { useEffect, useState } from "react";
-import { useFormik } from "formik";
-import { Button } from "@/components/ui/button";
-import { toFormikValidationSchema } from "zod-formik-adapter";
-import { daoFormSchema } from "@/validation/dao.validation";
-import { FormInput, FormSelect } from "./form-input";
-import { ImageUpload } from "@/components/ui/image-upload";
-import { compressImage } from "@/utils/image";
-import uploadFile from "@/utils/upload-file";
-import { type DaoFormData } from "@/validation/dao.validation";
-import { getTicker } from "@/utils/formatters";
-import { FileUpload } from "@/components/ui/file-upload";
-import {
-  AVAILABLE_FUND_OPTIONS,
-  AVAILABLE_PERIOD_OF_TRADING,
-} from "@/constants";
+import React, { useState } from "react";
 import { useSession } from "next-auth/react";
-import { toast } from "@/hooks/use-toast";
-import { CSVRow, getWhitelistArray } from "@/utils/csv";
-import { addDays } from "date-fns";
+import { type DaoFormData } from "@/validation/dao.validation";
+import { CSVRow } from "@/utils/csv";
+import StepIndicator from "./StepIndicator";
+import Form1 from "./form-1";
+import Form2 from "./form-2";
+import Form3 from "./form-3";
 
 interface IData extends DaoFormData {
   whitelist: CSVRow[];
+  logoFile: File | null;
+  userName: string;
+  userXHandle: string;
+  fundName: string;
+  fundTicker: string;
+  fundDescription: string;
+  fundXHandle?: string;
+  fundTelegramLink?: string;
+  fundManagerXHandle?: string;
+  fundManagerTelegramLink?: string;
 }
 
 interface Props {
   onSubmit: (data: IData) => void;
-  address: string;
+  address?: string;
 }
 
-const DAOForm: React.FC<Props> = ({ address, onSubmit }) => {
-  const { data: session } = useSession();
-  const [file, setFile] = useState<File | null>(null);
-  const [whitelist, setWhitelist] = useState<CSVRow[]>([]);
+const STEPS = ["Basic Information", "Social Media", "Fund Details"];
 
-  const handleFileUpload = async (file: File | null) => {
-    if (!file) return;
-    compressImage(file).then((compressedFile) => {
-      setFile(compressedFile);
-    });
-  };
+const DAOForm: React.FC<Props> = ({ address = "", onSubmit }) => {
+  const { data: sessionData } = useSession();
 
-  const handleFileChange = async (files: File[]) => {
-    if (files.length === 0) return;
-    const file = files[0];
-    const whtl = await getWhitelistArray(file);
-    setWhitelist(whtl);
-  };
-
-  const formik = useFormik<DaoFormData>({
-    initialValues: {
-      title: "",
-      fundTicker: "",
-      description: "",
-      userXHandle:
-        session?.user?.username ?? session?.user?.name ?? session?.user?.id!,
-      daoXHandle: "",
-      telegramHandle: "",
-      telegramGroup: "",
-      website: "",
-      fundingStarts: new Date(),
-      whitelistEnds: addDays(new Date(), 30),
-      indexFund: 0,
-      profits: 0,
-      poster: "",
-      tradingPeriod: 0,
-      walletAddress: address,
-      isPublic: true,
-      publicLimit: 1000,
-    },
-    validationSchema: toFormikValidationSchema(daoFormSchema),
-    onSubmit: async (values) => {
-      console.log(values);
-      if (!file) {
-        toast({
-          title: "Upload Poster",
-          variant: "destructive",
-        });
-        return;
-      }
-      const url = await uploadFile(file);
-      onSubmit({
-        ...values,
-        poster: url,
-        isPublic: whitelist.length === 0,
-        whitelist,
-      });
-    },
+  const [currentStep, setCurrentStep] = useState<number>(0);
+  const [formData, setFormData] = useState<Partial<IData>>({
+    walletAddress: address,
+    userXHandle: sessionData?.user?.name || "",
   });
+  const [posterFile, setPosterFile] = useState<File | null>(null);
 
-  useEffect(() => {
-    formik.setFieldValue("fundTicker", getTicker(formik.values.title));
-  }, [formik.values.title]);
+  const handleFileChange = (file: File) => {
+    setPosterFile(file);
+    setFormData((prev) => ({
+      ...prev,
+      logoFile: file,
+    }));
+  };
+
+  // Handle form progression
+  const handleNext = (stepData: Partial<IData>) => {
+    setFormData((prev) => {
+      const updatedData = {
+        ...prev,
+        ...stepData,
+      };
+      console.log("Updated Form Data:", updatedData);
+      return updatedData;
+    });
+    setCurrentStep(currentStep + 1);
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(currentStep - 1);
+  };
+
+  const handleSubmit = async (finalStepData: Partial<IData>) => {
+    const combinedData = {
+      ...formData,
+      ...finalStepData,
+      walletAddress: address,
+      logoFile: posterFile,
+    } as IData;
+
+    console.log("Final Submit Data:", combinedData);
+    onSubmit(combinedData);
+  };
+
+  // Render the current step
+  const renderStep = () => {
+    const totalSteps = STEPS.length;
+
+    switch (currentStep) {
+      case 0:
+        return (
+          <Form1
+            onNext={handleNext}
+            initialData={formData}
+            onFileChange={handleFileChange}
+          />
+        );
+      case 1:
+        return (
+          <Form2
+            onNext={handleNext}
+            onPrevious={handlePrevious}
+            initialData={formData}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+          />
+        );
+      case 2:
+        return (
+          <Form3
+            onSubmit={handleSubmit}
+            onPrevious={handlePrevious}
+            initialData={formData}
+            currentStep={currentStep}
+            totalSteps={totalSteps}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <form onSubmit={formik.handleSubmit} className="space-y-4">
-      <ImageUpload onChange={handleFileUpload} />
-      <FormInput
-        name="title"
-        label="Fund Name"
-        placeholder="Enter your fund's name"
-        formik={formik}
-      />
-      <FormInput
-        name="fundTicker"
-        placeholder="e.g., APT, ZAAP"
-        formik={formik}
-      />
-      <FormInput
-        name="description"
-        label="Fund Description"
-        placeholder="Describe your fund's strategy and goals"
-        type="textarea"
-        formik={formik}
-      />
-      <FormInput name="daoXHandle" placeholder="@username" formik={formik} />
-      <FormInput
-        label="Telegram Handle of Fund Manager"
-        name="telegramHandle"
-        placeholder="@username"
-        formik={formik}
-      />
-      <FormInput
-        name="telegramGroup"
-        placeholder="@groupname (optional)"
-        formik={formik}
-        required={false}
-      />
-      <FormInput
-        name="fundingStarts"
-        type="date"
-        placeholder="Enter the date your fund will begin"
-        formik={formik}
-      />
-      <FormInput
-        name="website"
-        placeholder="https://hedgify.money"
-        formik={formik}
-        required={false}
-      />
-      <FormInput
-        name="profits"
-        label="Manager's Cut"
-        type="number"
-        placeholder="Enter the Profit share Fund Manager wants to keep"
-        formik={formik}
-      />
-      <FormSelect
-        name="indexFund"
-        options={AVAILABLE_FUND_OPTIONS.map((item) => ({
-          key: item.toLocaleString(),
-          value: item.toString(),
-        }))}
-        label="The Amount you Want to Raise"
-        placeholder="Enter the Profit share Fund Manager wants to keep"
-        formik={formik}
-      />
-      <FormSelect
-        name="tradingPeriod"
-        options={AVAILABLE_PERIOD_OF_TRADING.map((days) => ({
-          key: `${days} days`,
-          value: days,
-        }))}
-        placeholder="Select trading period duration"
-        formik={formik}
-      />
-      <FormInput
-        name="publicLimit"
-        label="Public Max Limit"
-        placeholder="User Max Limit"
-        type="number"
-        formik={formik}
+    <div className="space-y-4">
+      <StepIndicator
+        steps={STEPS}
+        currentStep={currentStep}
+        onStepClick={(step) => {
+          if (step <= currentStep) {
+            setCurrentStep(step);
+          }
+        }}
       />
 
-      <FileUpload onChange={handleFileChange} />
-      <FormInput
-        name="whitelistEnds"
-        type="date"
-        placeholder="Enter the date When Whitelist Ends"
-        formik={formik}
-      />
-
-      <Button
-        type="submit"
-        className="w-full font-semibold"
-        // disabled={formik.isSubmitting || !formik.isValid}
-      >
-        {formik.isSubmitting ? "Submitting..." : "Submit"}
-      </Button>
-    </form>
+      <div className="min-h-[400px]">{renderStep()}</div>
+    </div>
   );
 };
 

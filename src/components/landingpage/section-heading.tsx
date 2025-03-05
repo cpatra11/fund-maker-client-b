@@ -32,7 +32,7 @@ const SectionHeading = ({
         </h2>
       </div>
       {subheading && (
-        <p className="text-center text-[#141414]/60 text-xs sm:text-base font-stretch-100% font-gregular mt-4">
+        <p className="text-center text-[#141414]/60 text-xs sm:text-base font-stretch-100% font-gregular mt-3 mb-4">
           {subheading}
         </p>
       )}

@@ -20,7 +20,7 @@ const Featured = () => {
         >
           <Image
             className="w-full h-auto rounded-[20px]"
-            src="/images/girl.png"
+            src="/images/girl.svg"
             alt="YapTrade DAO"
             width={350}
             height={250}

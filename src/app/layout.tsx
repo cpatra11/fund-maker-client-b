@@ -7,6 +7,27 @@ import { WalletProvider } from "@/provider/WalletProvider";
 import { Toaster } from "@/components/ui/toaster";
 import NavBar from "@/components/modules/nav-bar";
 import { getSession } from "@/lib/auth";
+import localFont from "next/font/local";
+const gilroy = localFont({
+  src: [
+    {
+      path: "fonts/Gilroy-Regular.ttf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "fonts/Gilroy-Medium.ttf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "fonts/Gilroy-Bold.ttf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-gilroy",
+});
 
 const mFont = FontSans({
   subsets: ["latin"],
@@ -26,7 +47,7 @@ export default async function RootLayout({
   const session = await getSession();
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${mFont.className} antialiased overflow-x-hidden`}>
+      <body className={` ${gilroy.variable} antialiased overflow-x-hidden`}>
         <WalletProvider>
           <RootLayoutProvider session={session}>
             <NavBar />

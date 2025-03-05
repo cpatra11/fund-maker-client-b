@@ -2,12 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import React, {
-  ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-} from "react";
+import React, { ReactNode, createContext, useContext, useEffect } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 
 interface ModalContextType {
@@ -82,7 +77,9 @@ export const ModalBody = ({
   return (
     <DialogPrimitive.Portal>
       <AnimatePresence>
-        <DialogPrimitive.Title className="sr-only">Modal Dialog</DialogPrimitive.Title>
+        <DialogPrimitive.Title className="sr-only">
+          Modal Dialog
+        </DialogPrimitive.Title>
         {open && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -159,12 +156,7 @@ export const ModalFooter = ({
   className?: string;
 }) => {
   return (
-    <div
-      className={cn(
-        "flex justify-end p-4 bg-neutral-900",
-        className
-      )}
-    >
+    <div className={cn("flex justify-end p-4 bg-neutral-900", className)}>
       {children}
     </div>
   );

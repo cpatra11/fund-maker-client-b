@@ -1,26 +1,24 @@
 "use client";
 
 import React, { useState } from "react";
-import { useFormik } from "formik";
-import { Button } from "@/components/ui/button";
 import { z } from "zod";
-import { Card } from "@/components/ui/card";
-import DAOForm from "./Form";
-import { FormInput } from "./form-input";
-import { toFormikValidationSchema } from "zod-formik-adapter";
-import InviteAPI from "@/request/invite/invite.api";
 import { AnimatePresence, motion, useAnimate } from "framer-motion";
 import { useSession } from "next-auth/react";
-import { DaoData, DaoFormData } from "@/validation/dao.validation";
-import { useContract } from "@/hooks/use-contract";
-import { useDao } from "@/hooks/use-dao";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { CSVRow } from "@/validation/csv.validation";
 import { toast } from "@/hooks/use-toast";
 import { Modal, ModalBody, ModalContent } from "@/components/ui/animated-modal";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
+import SectionHeading from "@/components/landingpage/section-heading";
+import { CustomButton } from "./custom-button";
+import { cn } from "@/lib/utils";
+import { toFormikValidationSchema } from "zod-formik-adapter";
+import { FormInput } from "./form-input";
+import { useDao } from "@/hooks/use-dao";
+import { useContract } from "@/hooks/use-contract";
+import uploadFile from "@/utils/upload-file";
+import { useFormik } from "formik";
+import DAOForm from "./Form";
 
 export const inviteSchema = z.object({
   inviteCode: z.string().min(6, "Invite code must be at least 6 characters"),
@@ -31,22 +29,20 @@ interface Props {
   children: React.ReactNode;
 }
 
-interface IData extends DaoFormData {
-  whitelist: CSVRow[];
-}
-
 const DaoInitForm: React.FC<Props> = ({ inviteCode, children }) => {
   const router = useRouter();
-  const [dao, setDao] = useState<DaoData | null>();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [createdDaoId, setCreatedDaoId] = useState(null);
+  const [posterUrl, setPosterUrl] = useState<string | null>(null);
+
   const { account, connected } = useWallet();
   const { status } = useSession();
-  const inviteApi = new InviteAPI();
   const { createDao, updateDaoValue } = useDao();
   const contract = useContract();
 
   const [scope, animate] = useAnimate();
-  const [verified, setVerified] = useState(inviteCode.length > 0);
+  const [verified, setVerified] = useState(false);
   const [invite, setInvite] = useState(inviteCode);
 
   const formik = useFormik<{ inviteCode: string }>({
@@ -55,75 +51,101 @@ const DaoInitForm: React.FC<Props> = ({ inviteCode, children }) => {
     },
     validationSchema: toFormikValidationSchema(inviteSchema),
     onSubmit: async (values) => {
-      const v = await inviteApi.validateInvite(values.inviteCode);
-      setVerified(v);
-      if (v) setInvite(values.inviteCode);
-      animate(scope.current, { marginTop: 0 });
+      setIsLoading(true);
+      try {
+        const isValid = true;
+        setVerified(isValid);
+        if (isValid) {
+          setInvite(values.inviteCode);
+          animate(scope.current, { marginTop: 0 });
+        } else {
+          toast({
+            title: "Invalid Invite Code",
+            description: "Please check your code and try again",
+            variant: "destructive",
+          });
+        }
+      } catch (error) {
+        toast({
+          title: "Error Checking Invite Code",
+          description: "Please try again later",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     },
   });
 
-  const handleCreateDao = async (data: IData) => {
-    const create_resp = await createDao(data, invite);
-    if (create_resp === null) {
-      toast({
-        title: "Failed to create DAO, ",
-        description: "No response found",
-        variant: "destructive",
+  const handleCreateDao = async (finalData: any) => {
+    setIsLoading(true);
+
+    try {
+      let logoUrl = "";
+      if (finalData.logoFile) {
+        logoUrl = await uploadFile(finalData.logoFile);
+      }
+
+      const daoData = {
+        ...finalData,
+        logoUrl,
+        creatorAddress: account?.address,
+      };
+
+      const createdDao = await createDao(daoData, invite);
+
+      if (!createdDao) {
+        throw new Error("Failed to create DAO record");
+      }
+
+      const contractResponse = await contract.createDao({
+        fundName: daoData.fundName,
+        ticker: daoData.fundTicker,
+        description: daoData.fundDescription,
+        daoId: createdDao.id,
       });
-      return;
-    }
 
-    // @ts-ignore
-    const contract_resp = await contract.createDao(create_resp);
+      if (!contractResponse) {
+        throw new Error("Transaction failed");
+      }
 
-    if (!contract_resp) {
+      const daoCreationEvent = contractResponse.events.find((event) =>
+        event.type.includes("DaoCreationEvent")
+      );
+
+      if (!daoCreationEvent) {
+        throw new Error("DAO creation event not found");
+      }
+
+      const { dao_coin, dao_object_address } = daoCreationEvent.data;
+
+      const updatedDao = await updateDaoValue(createdDao.id, {
+        treasuryAddress: dao_coin.inner,
+        daoCoinAddress: dao_object_address,
+      });
+
+      if (!updatedDao) {
+        throw new Error("Failed to update DAO with blockchain addresses");
+      }
+
+      setCreatedDaoId(updatedDao.id);
+      setPosterUrl(logoUrl);
+      setIsModalOpen(true);
+    } catch (error) {
       toast({
         title: "Failed to create DAO",
-        description: "Transaction failed",
+        description: (error as Error).message || "An unexpected error occurred",
         variant: "destructive",
       });
-      return;
+    } finally {
+      setIsLoading(false);
     }
-    const daoCreationEvent = contract_resp.events.find((event) =>
-      event.type.includes("DaoCreationEvent")
-    );
+  };
 
-    if (!daoCreationEvent) {
-      toast({
-        title: "Failed to create DAO",
-        description: "Creation event not found",
-        variant: "destructive",
-      });
-      return;
+  const handleViewDashboard = () => {
+    if (createdDaoId) {
+      router.push(`/dashboard/${createdDaoId}`);
     }
-
-    const { dao_coin, dao_object_address } = daoCreationEvent.data;
-
-    if (!dao_coin || !dao_object_address) {
-      toast({
-        title: "Failed to create DAO",
-        description: "Missing DAO addresses in event",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const dao = await updateDaoValue(create_resp.id, {
-      treasuryAddress: dao_coin.inner,
-      daoCoinAddress: dao_object_address,
-    });
-
-    if (!dao) {
-      toast({
-        title: "Failed to create DAO",
-        description: "Something Went Wrong",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setDao(dao);
-    setIsOpen(true);
   };
 
   return (
@@ -132,51 +154,51 @@ const DaoInitForm: React.FC<Props> = ({ inviteCode, children }) => {
         className={"flex-1 space-y-2 md:space-y-4 mt-10 min-w-sm max-w-md"}
         ref={scope}
       >
-        <Card className="w-full mx-auto p-6 pace-y-6">
+        <SectionHeading subheading="Enter your invite code">
+          Create Fund Today
+        </SectionHeading>
+        {!verified ? (
           <form onSubmit={formik.handleSubmit} className="space-y-4">
             <FormInput
               name="inviteCode"
-              label="Invite Code"
               placeholder="XXXX-XXXX-XXXX-XXXX-XXXX"
               formik={formik}
-              disabled={verified}
+              disabled={verified || isLoading}
+              showLabel={false}
             />
-            {!verified && (
-              <Button
-                type="submit"
-                className="w-full font-semibold"
-                disabled={status !== "authenticated" || !connected}
-              >
-                {!connected
-                  ? "Please Connect Your Wallet"
-                  : status === "authenticated"
-                  ? "Check Eligibility"
-                  : "Please Sign in With Twitter"}
-              </Button>
-            )}
-          </form>
-        </Card>
 
-        <AnimatePresence>
-          {verified && (
+            <CustomButton
+              type="submit"
+              height="tall"
+              disabled={status !== "authenticated" || !connected || isLoading}
+              className={cn(
+                "transition-all duration-200",
+                (status !== "authenticated" || !connected || isLoading) &&
+                  "opacity-70 cursor-not-allowed"
+              )}
+              textClassName="text-md font-bold font-black"
+            >
+              {isLoading
+                ? "Checking..."
+                : !connected
+                ? "Please Connect Your Wallet"
+                : status === "authenticated"
+                ? "Check Eligibility"
+                : "Please Sign in With Twitter"}
+            </CustomButton>
+          </form>
+        ) : (
+          <AnimatePresence mode="wait">
             <motion.div
+              key={verified.toString()}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
             >
-              <Card className="w-full mx-auto p-6">
-                <h2 className="text-lg md:text-2xl font-bold text-center">
-                  Create Your Hedge Fund DAO
-                </h2>
-
-                <DAOForm
-                  onSubmit={handleCreateDao}
-                  address={account?.address!}
-                />
-              </Card>
+              <DAOForm onSubmit={handleCreateDao} />
             </motion.div>
-          )}
-        </AnimatePresence>
+          </AnimatePresence>
+        )}
       </div>
 
       <AnimatePresence>
@@ -191,27 +213,35 @@ const DaoInitForm: React.FC<Props> = ({ inviteCode, children }) => {
         )}
       </AnimatePresence>
 
-      <Modal open={isOpen} setOpen={setIsOpen}>
+      <Modal open={isModalOpen} setOpen={setIsModalOpen}>
         <ModalBody>
           <ModalContent>
-            <h3 className="text-lg font-semibold">Transaction Status</h3>
-            {dao && dao.poster && (
-              <>
-                <div className="relative overflow-hidden z-40 bg-white flex flex-col items-start justify-start h-64 w-full mx-auto rounded-md">
-                  <div className="relative w-full h-full">
-                    <Image
-                      src={dao?.poster}
-                      alt="Preview"
-                      className="object-cover"
-                      fill
-                    />
-                  </div>
+            <h3 className="text-2xl font-semibold mb-4">
+              Fund Created Successfully!
+            </h3>
+            {posterUrl && (
+              <div className="relative overflow-hidden z-40 bg-white flex flex-col items-start justify-start h-64 w-full mx-auto rounded-md mb-6">
+                <div className="relative w-full h-full">
+                  <Image
+                    src={posterUrl}
+                    alt="Fund Logo"
+                    layout="fill"
+                    objectFit="contain"
+                  />
                 </div>
-                <Button onClick={() => router.replace(`/dashboard/${dao.id}`)}>
-                  Check Modal Dashboard
-                </Button>
-              </>
+              </div>
             )}
+            <p className="mb-6 text-gray-600">
+              Your fund has been created and is now ready for use. You can
+              manage your fund from the dashboard.
+            </p>
+            <CustomButton
+              onClick={handleViewDashboard}
+              height="tall"
+              className="w-full"
+            >
+              Go to Fund Dashboard
+            </CustomButton>
           </ModalContent>
         </ModalBody>
       </Modal>

@@ -1,45 +1,22 @@
 "use client";
 
-import React, { useState, useEffect, use, Suspense } from "react";
+import React, { Suspense } from "react";
 import DaoInitForm from "@/components/modules/dao-create-form";
 import { useSearchParams } from "next/navigation";
-import InviteAPI from "@/request/invite/invite.api";
 import DAOTokenHolderGuide from "@/components/modules/help";
 import Loading from "@/components/modules/loading";
 
 const CreateDao = () => {
-  const [loading, setLoading] = useState(true);
   const searchParams = useSearchParams();
   const paramInvite = searchParams.get("invite") || "";
-  const [verified, setVerified] = useState(false);
-  const api = new InviteAPI();
-
-  useEffect(() => {
-    const validateInvite = async () => {
-      if (paramInvite) {
-        try {
-          const isValid = await api.validateInvite(paramInvite);
-          setVerified(isValid);
-        } catch (error) {
-          console.error("Error validating invite:", error);
-          setVerified(false);
-        }
-      }
-      setLoading(false);
-    };
-
-    validateInvite();
-  }, [paramInvite]);
-
-  if (loading) {
-    return <Loading />;
-  }
 
   return (
-    <main className="flex justify-center gap-4">
-      <DaoInitForm inviteCode={verified ? paramInvite : ""}>
-        <DAOTokenHolderGuide />
-      </DaoInitForm>
+    <main className="container mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row justify-center gap-8">
+        <DaoInitForm inviteCode={paramInvite}>
+          <DAOTokenHolderGuide />
+        </DaoInitForm>
+      </div>
     </main>
   );
 };

@@ -13,6 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+export type InputSize = "default" | "sm" | "lg" | "xl";
+
 interface BaseFormProps {
   name: string;
   label?: string;
@@ -20,6 +22,10 @@ interface BaseFormProps {
   required?: boolean;
   formik?: any;
   disabled?: boolean;
+  className?: string;
+  size?: InputSize;
+  variant?: "default" | "outline" | "dark";
+  showLabel?: boolean;
 }
 
 interface FormInputProps extends BaseFormProps {
@@ -29,6 +35,34 @@ interface FormInputProps extends BaseFormProps {
 interface FormSelectProps extends BaseFormProps {
   options: { key: string; value: string | number }[];
 }
+
+interface FormCompactInputProps extends BaseFormProps {
+  type?: HTMLInputTypeAttribute;
+}
+
+const getSizeClassNames = (size: InputSize = "default") => {
+  switch (size) {
+    case "sm":
+      return "h-12 md:h-14 px-4 py-2 text-base md:text-lg";
+    case "lg":
+      return "h-18 md:h-22 px-8 py-5 text-lg md:text-xl";
+    case "xl":
+      return "h-20 md:h-24 px-8 py-5 text-3xl md:text-4xl";
+    default:
+      return "h-14 md:h-16 px-6 py-4 text-base md:text-lg";
+  }
+};
+
+const getVariantClassNames = (variant: string = "default") => {
+  switch (variant) {
+    case "outline":
+      return "bg-transparent border-2 border-white/20 text-white";
+    case "dark":
+      return "bg-gray-900 border-2 border-gray-700 text-white";
+    default:
+      return "bg-white rounded-[20px] border-2 border-black/20 text-black";
+  }
+};
 
 const getFormFieldClassNames = (formik: any, name: string) =>
   cn(
@@ -56,8 +90,11 @@ const FormWrapper: React.FC<{ children: React.ReactNode } & BaseFormProps> = ({
   name,
   label,
   required = true,
+  showLabel = true,
 }) => {
   const displayLabel = useMemo(() => label ?? getLabel(name), [label, name]);
+
+  if (!showLabel) return <>{children}</>;
 
   return (
     <div className="space-y-2">
@@ -70,7 +107,7 @@ const FormWrapper: React.FC<{ children: React.ReactNode } & BaseFormProps> = ({
   );
 };
 
-const FormInput: React.FC<FormInputProps> = ({
+const FormInput: React.FC<FormCompactInputProps> = ({
   name,
   label,
   placeholder = "",
@@ -78,61 +115,50 @@ const FormInput: React.FC<FormInputProps> = ({
   required = true,
   formik,
   disabled = false,
+  className = "",
+  size = "lg",
+  variant = "default",
+  showLabel = true,
 }) => {
   const fieldClassNames = useMemo(
-    () => getFormFieldClassNames(formik, name),
-    [formik.errors[name], formik.touched[name], name]
-  );
-
-  const commonProps = useMemo(
-    () => ({
-      id: name,
-      name,
-      placeholder,
-      onChange: formik.handleChange,
-      onBlur: formik.handleBlur,
-      value: formik.values[name],
-      disabled: disabled || formik.isSubmitting,
-      autoComplete: "off",
-      className: fieldClassNames,
-    }),
-    [
-      name,
-      placeholder,
-      formik.handleChange,
-      formik.handleBlur,
-      formik.values[name],
-      formik.isSubmitting,
-      disabled,
-      fieldClassNames,
-    ]
-  );
-
-  const textareaClassName = useMemo(
-    () => `${commonProps.className} min-h-[100px] px-3 py-2 rounded-md`,
-    [commonProps.className]
+    () =>
+      cn(
+        "w-full font-bold font-gbold uppercase focus:outline-none focus:ring-2 focus:ring-black/30 caret-black caret-[0.5em] rounded-[20px]",
+        getSizeClassNames(size),
+        getVariantClassNames(variant),
+        formik.errors[name] && formik.touched[name] ? "border-red-500" : "",
+        className
+      ),
+    [formik.errors[name], formik.touched[name], name, size, variant, className]
   );
 
   return (
-    <FormWrapper name={name} label={label} required={required}>
-      {type === "textarea" ? (
-        <Textarea {...commonProps} className={textareaClassName} rows={4} />
-      ) : type === "date" ? (
-        <DatePicker
-          onChange={(date) => formik.setFieldValue(name, date)}
-          defaultValue={formik.values[name]}
-        />
-      ) : (
+    <FormWrapper
+      name={name}
+      label={label}
+      required={required}
+      showLabel={showLabel}
+    >
+      <div className="relative">
         <Input
-          {...commonProps}
+          id={name}
+          name={name}
+          placeholder={placeholder}
+          onChange={formik.handleChange}
+          onBlur={formik.handleBlur}
+          value={formik.values[name]}
+          disabled={disabled || formik.isSubmitting}
+          autoComplete="off"
           type={type}
+          className={fieldClassNames}
+          style={{ caretWidth: "1px", caretColor: "black" }}
           onWheel={(e) =>
             type === "number" &&
             e.target instanceof HTMLElement &&
             e.target.blur()
           }
         />
-      )}
+      </div>
       <FormField formik={formik} name={name} />
     </FormWrapper>
   );
@@ -146,10 +172,21 @@ const FormSelect: React.FC<FormSelectProps> = ({
   formik,
   disabled = false,
   options,
+  className = "",
+  size = "default",
+  variant = "default",
+  showLabel = true,
 }) => {
-  const fieldClassNames = useMemo(
+  const baseClassNames = useMemo(
     () => getFormFieldClassNames(formik, name),
     [formik.errors[name], formik.touched[name], name]
+  );
+
+  const fieldClassNames = cn(
+    baseClassNames,
+    getSizeClassNames(size),
+    getVariantClassNames(variant),
+    className
   );
 
   const memoizedOptions = useMemo(
@@ -163,7 +200,12 @@ const FormSelect: React.FC<FormSelectProps> = ({
   );
 
   return (
-    <FormWrapper name={name} label={label} required={required}>
+    <FormWrapper
+      name={name}
+      label={label}
+      required={required}
+      showLabel={showLabel}
+    >
       <Select
         onValueChange={(value) => formik.setFieldValue(name, value)}
         defaultValue={formik.values[name]}
@@ -179,4 +221,4 @@ const FormSelect: React.FC<FormSelectProps> = ({
   );
 };
 
-export { FormInput, FormSelect };
+export { FormInput, FormSelect, FormField, FormWrapper };

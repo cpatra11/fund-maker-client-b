@@ -5,27 +5,27 @@ import UpcomingFundCard from "./upcoming-fund-card";
 
 const UPCOMING_FUNDS = [
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "YKTR",
     name: "Yaki DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "PHNX",
     name: "Phoenix DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "PHNX",
     name: "Phoenix DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "PHNX",
     name: "Phoenix DAO",
   },
@@ -61,7 +61,7 @@ const UpcomingFunds = () => {
       itemWidth="w-full sm:w-[260px] md:w-[280px] lg:w-[300px]"
       maxWidth="max-w-[60%] xl:max-w-[1000px]"
       itemsPerView={itemsPerView}
-      className="mt-12 sm:mt-16 lg:mt-20 px-4 sm:px-6"
+      className=" px-4 sm:px-6"
       renderItem={(fund) => (
         <div>
           <UpcomingFundCard {...fund} />

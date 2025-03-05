@@ -5,72 +5,72 @@ import FeaturedFundCard from "./featured-fund-card";
 
 const FEATURED_FUNDS = [
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },
   {
-    image: "/images/girl.png",
+    image: "/images/girl.svg",
     symbol: "RWOK",
     name: "RWOK DAO",
   },

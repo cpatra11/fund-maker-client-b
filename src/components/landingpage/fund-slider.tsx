@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { motion, useAnimation, PanInfo } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import SectionHeading from "./section-heading";
 import CircularArrow from "./circular-arrow";
 
@@ -66,17 +66,13 @@ const FundSlider = ({
     });
   };
 
-  // Handle drag start
   const handleDragStart = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault(); // Prevent default behavior
+    e.preventDefault();
     setIsDragging(true);
 
-    // Store current animation position
     controls.stop();
-    // Use dragStartX.current instead of trying to get the current value from controls
     dragStartX.current = calculateCardPosition(currentIndex);
 
-    // Get client X based on event type
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
     dragCurrentX.current = clientX;
     dragStartClientX.current = clientX;
@@ -87,27 +83,21 @@ const FundSlider = ({
     window.addEventListener("touchend", handleDragEnd);
   };
 
-  // Handle drag move
   const handleDragMove = (e: MouseEvent | TouchEvent) => {
     if (!isDragging) return;
 
-    // Prevent scroll while dragging
     e.preventDefault();
 
-    // Get client X based on event type
     const clientX = "touches" in e ? e.touches[0].clientX : e.clientX;
     const deltaX = clientX - dragCurrentX.current;
 
-    // Update position during drag
     controls.set({ x: dragStartX.current + deltaX });
   };
 
-  // Handle drag end
   const handleDragEnd = (e?: MouseEvent | TouchEvent) => {
     if (!isDragging) return;
     setIsDragging(false);
 
-    // Get client X based on event type - ensure e is defined
     let totalDragDistance = 0;
     if (e) {
       const clientX =
@@ -120,24 +110,20 @@ const FundSlider = ({
       }
     }
 
-    const threshold = 50; // Minimum drag distance to trigger slide
+    const threshold = 50;
 
-    // Determine which way to slide based on drag distance
     if (Math.abs(totalDragDistance) > threshold) {
       if (totalDragDistance > 0 && currentIndex > 0) {
         handlePrev();
       } else if (totalDragDistance < 0 && currentIndex < maxIndex) {
         handleNext();
       } else {
-        // Snap back to current position if at the end
         controls.start({ x: calculateCardPosition(currentIndex) });
       }
     } else {
-      // If drag distance is small, snap back
       controls.start({ x: calculateCardPosition(currentIndex) });
     }
 
-    // Remove event listeners
     window.removeEventListener("mousemove", handleDragMove);
     window.removeEventListener("touchmove", handleDragMove);
     window.removeEventListener("mouseup", handleDragEnd);
@@ -165,7 +151,6 @@ const FundSlider = ({
       <div
         className={`relative w-full ${maxWidth} overflow-hidden pb-16 sm:pb-20`}
       >
-        <div className="absolute left-[calc(-50vw+50%)] top-0 bottom-16 sm:bottom-20 w-[calc(50vw-50%+8rem)] sm:w-[calc(50vw-50%+16rem)] bg-gradient-to-r from-white via-white to-transparent z-[5]" />
         <div className="absolute right-[calc(-50vw+50%)] top-0 bottom-16 sm:bottom-20 w-[calc(50vw-50%+8rem)] sm:w-[calc(50vw-50%+16rem)] bg-gradient-to-l from-white via-white to-transparent z-[5]" />
 
         <div className="w-full relative z-[2] pb-16" ref={containerRef}>

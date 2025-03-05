@@ -32,6 +32,7 @@
 @theme {
   --font-gblack: "Gilroy-Black", sans-serif;
   --font-gbold: "Gilroy-Bold", sans-serif;
+
   --font-gsemibold: "Gilroy-Semibold", sans-serif;
   --font-gregular: "Gilroy-Regular", sans-serif;
   --color-mint-green-50: #edffe5;
@@ -101,6 +102,7 @@
   ::backdrop,
   ::file-selector-button {
     border-color: var(--color-gray-200, currentColor);
+    font-family: var(--gilroy);
   }
 }
 

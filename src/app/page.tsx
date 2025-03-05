@@ -11,7 +11,7 @@ const Home: React.FC = () => {
     <>
       <Hero />
       <Featured /> {/* Cha-Ching Champion section */}
-      <LivePrice />
+      {/* <LivePrice /> */}
       <div className="w-full px-4">
         <FeaturedFunds />
         <UpcomingFunds />
