@@ -15,7 +15,7 @@ const SectionHeading = ({
 }: SectionHeadingProps) => {
   return (
     <div className="flex flex-col items-center justify-center">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 ">
         {icon && (
           <div className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 flex items-center justify-center translate-y-[2px]">
             {icon}
@@ -23,7 +23,7 @@ const SectionHeading = ({
         )}
         <h2
           className={cn(
-            "text-center text-gray-900 text-xl sm:text-3xl md:text-4xl font-sans font-bold tracking-tight",
+            "text-center text-gray-900 text-xl sm:text-3xl md:text-4xl font-sans font-bold tracking-tight whitespace-nowrap ",
             !subheading && "mb-8",
             className
           )}

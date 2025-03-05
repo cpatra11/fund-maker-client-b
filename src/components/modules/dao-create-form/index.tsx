@@ -26,7 +26,7 @@ export const inviteSchema = z.object({
 
 interface Props {
   inviteCode: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const DaoInitForm: React.FC<Props> = ({ inviteCode, children }) => {
@@ -42,7 +42,7 @@ const DaoInitForm: React.FC<Props> = ({ inviteCode, children }) => {
   const contract = useContract();
 
   const [scope, animate] = useAnimate();
-  const [verified, setVerified] = useState(false);
+  const [verified, setVerified] = useState(true);
   const [invite, setInvite] = useState(inviteCode);
 
   const formik = useFormik<{ inviteCode: string }>({
@@ -154,39 +154,41 @@ const DaoInitForm: React.FC<Props> = ({ inviteCode, children }) => {
         className={"flex-1 space-y-2 md:space-y-4 mt-10 min-w-sm max-w-md"}
         ref={scope}
       >
-        <SectionHeading subheading="Enter your invite code">
-          Create Fund Today
-        </SectionHeading>
         {!verified ? (
-          <form onSubmit={formik.handleSubmit} className="space-y-4">
-            <FormInput
-              name="inviteCode"
-              placeholder="XXXX-XXXX-XXXX-XXXX-XXXX"
-              formik={formik}
-              disabled={verified || isLoading}
-              showLabel={false}
-            />
+          <>
+            <SectionHeading subheading="Enter your invite code">
+              Create Fund Today
+            </SectionHeading>
+            <form onSubmit={formik.handleSubmit} className="space-y-4">
+              <FormInput
+                name="inviteCode"
+                placeholder="XXXX-XXXX-XXXX-XXXX-XXXX"
+                formik={formik}
+                disabled={verified || isLoading}
+                showLabel={false}
+              />
 
-            <CustomButton
-              type="submit"
-              height="tall"
-              disabled={status !== "authenticated" || !connected || isLoading}
-              className={cn(
-                "transition-all duration-200",
-                (status !== "authenticated" || !connected || isLoading) &&
-                  "opacity-70 cursor-not-allowed"
-              )}
-              textClassName="text-md font-bold font-black"
-            >
-              {isLoading
-                ? "Checking..."
-                : !connected
-                ? "Please Connect Your Wallet"
-                : status === "authenticated"
-                ? "Check Eligibility"
-                : "Please Sign in With Twitter"}
-            </CustomButton>
-          </form>
+              <CustomButton
+                type="submit"
+                height="tall"
+                disabled={status !== "authenticated" || !connected || isLoading}
+                className={cn(
+                  "transition-all duration-200",
+                  (status !== "authenticated" || !connected || isLoading) &&
+                    "opacity-70 cursor-not-allowed"
+                )}
+                textClassName="text-md font-bold font-black"
+              >
+                {isLoading
+                  ? "Checking..."
+                  : !connected
+                  ? "Please Connect Your Wallet"
+                  : status === "authenticated"
+                  ? "Check Eligibility"
+                  : "Please Sign in With Twitter"}
+              </CustomButton>
+            </form>
+          </>
         ) : (
           <AnimatePresence mode="wait">
             <motion.div
@@ -194,24 +196,13 @@ const DaoInitForm: React.FC<Props> = ({ inviteCode, children }) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
+              className="relative"
             >
               <DAOForm onSubmit={handleCreateDao} />
             </motion.div>
           </AnimatePresence>
         )}
       </div>
-
-      <AnimatePresence>
-        {verified && (
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, y: 0, x: 0 }}
-            className="flex-1 hidden md:block m-0! min-w-96"
-          >
-            {children}
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <Modal open={isModalOpen} setOpen={setIsModalOpen}>
         <ModalBody>

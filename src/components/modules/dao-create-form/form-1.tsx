@@ -85,7 +85,7 @@ const Form1: React.FC<Form1Props> = ({ onNext, initialData, onFileChange }) => {
   };
 
   return (
-    <div className="flex-1 space-y-2 md:space-y-4 mt-10 min-w-sm max-w-md">
+    <div className="flex-1 space-y-2 md:space-y-4  min-w-sm max-w-md">
       <SectionHeading subheading="Enter your basic information">
         Let's create your DAO (1/3)
       </SectionHeading>

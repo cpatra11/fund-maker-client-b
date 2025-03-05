@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useSession } from "next-auth/react";
 import { type DaoFormData } from "@/validation/dao.validation";
 import { CSVRow } from "@/utils/csv";
-import StepIndicator from "./StepIndicator";
 import Form1 from "./form-1";
 import Form2 from "./form-2";
 import Form3 from "./form-3";
@@ -26,17 +25,15 @@ interface Props {
   address?: string;
 }
 
-const STEPS = ["Basic Information", "Social Media", "Fund Details"];
-
 const DAOForm: React.FC<Props> = ({ address = "", onSubmit }) => {
   const { data: sessionData } = useSession();
 
-  const [currentStep, setCurrentStep] = useState<number>(0);
   const [formData, setFormData] = useState<Partial<IData>>({
     walletAddress: address,
     userXHandle: sessionData?.user?.name || "",
   });
   const [posterFile, setPosterFile] = useState<File | null>(null);
+  const [currentStep, setCurrentStep] = useState<number>(0);
 
   const handleFileChange = (file: File) => {
     setPosterFile(file);
@@ -48,15 +45,13 @@ const DAOForm: React.FC<Props> = ({ address = "", onSubmit }) => {
 
   // Handle form progression
   const handleNext = (stepData: Partial<IData>) => {
-    setFormData((prev) => {
-      const updatedData = {
-        ...prev,
-        ...stepData,
-      };
-      console.log("Updated Form Data:", updatedData);
-      return updatedData;
-    });
-    setCurrentStep(currentStep + 1);
+    // Merge the new data with existing data
+    const updatedData = {
+      ...formData,
+      ...stepData,
+    };
+    setFormData(updatedData);
+    setCurrentStep((prev) => prev + 1);
   };
 
   const handlePrevious = () => {
@@ -77,7 +72,7 @@ const DAOForm: React.FC<Props> = ({ address = "", onSubmit }) => {
 
   // Render the current step
   const renderStep = () => {
-    const totalSteps = STEPS.length;
+    const totalSteps = 3; // Changed from 4 to 3
 
     switch (currentStep) {
       case 0:
@@ -101,7 +96,7 @@ const DAOForm: React.FC<Props> = ({ address = "", onSubmit }) => {
       case 2:
         return (
           <Form3
-            onSubmit={handleSubmit}
+            onNext={handleSubmit} // Changed to handleSubmit for the final step
             onPrevious={handlePrevious}
             initialData={formData}
             currentStep={currentStep}
@@ -115,16 +110,6 @@ const DAOForm: React.FC<Props> = ({ address = "", onSubmit }) => {
 
   return (
     <div className="space-y-4">
-      <StepIndicator
-        steps={STEPS}
-        currentStep={currentStep}
-        onStepClick={(step) => {
-          if (step <= currentStep) {
-            setCurrentStep(step);
-          }
-        }}
-      />
-
       <div className="min-h-[400px]">{renderStep()}</div>
     </div>
   );

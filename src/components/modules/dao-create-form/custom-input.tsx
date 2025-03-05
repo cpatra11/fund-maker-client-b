@@ -43,7 +43,7 @@ export const CustomInput = ({
       )}
       <div
         className={cn(
-          "w-[844px] h-16 pl-[51px] pr-[575px] py-4 bg-white rounded-[20px] border-2 border-black/20 justify-start items-center inline-flex overflow-hidden max-w-full relative",
+          "w-full h-16 pl-[51px] pr-[51px] py-4 bg-white rounded-[20px] border-2 border-black/20 justify-start items-center inline-flex overflow-hidden relative",
           isTextArea && "h-auto min-h-[120px]",
           className
         )}

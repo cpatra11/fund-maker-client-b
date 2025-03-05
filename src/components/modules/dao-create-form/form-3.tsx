@@ -10,7 +10,7 @@ import { z } from "zod";
 import { toFormikValidationSchema } from "zod-formik-adapter";
 
 interface Form3Props {
-  onSubmit: (values: Form3Values) => void;
+  onNext: (values: Form3Values) => void; // Changed from onSubmit to onNext
   onPrevious: () => void;
   initialData: Partial<Form3Values>;
   currentStep: number;
@@ -60,7 +60,7 @@ const validationSchema = z.object({
 });
 
 const Form3: React.FC<Form3Props> = ({
-  onSubmit,
+  onNext, // Changed from onSubmit to onNext
   onPrevious,
   initialData,
   currentStep,
@@ -75,30 +75,32 @@ const Form3: React.FC<Form3Props> = ({
     },
     validationSchema: toFormikValidationSchema(validationSchema),
     onSubmit: (values) => {
-      // Include all accumulated data in final submission
-      onSubmit({
+      onNext({
         ...initialData,
         ...values,
       });
     },
   });
 
-  const handleSubmit = () => {
-    if (!formik.dirty) {
-      // If form hasn't changed, still allow progression
-      onSubmit(formik.values);
+  const handleSubmit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!formik.isValid) {
+      // Touch all fields to show validation errors
+      Object.keys(formik.values).forEach((field) => {
+        formik.setFieldTouched(field, true);
+      });
       return;
     }
-    formik.handleSubmit();
+    onNext(formik.values); // Changed from onSubmit to onNext
   };
 
   return (
-    <div className="flex-1 space-y-2 md:space-y-4 mt-10 min-w-sm max-w-md">
+    <div className="flex-1 space-y-2 md:space-y-4 min-w-sm max-w-md">
       <div className="flex items-center">
         <CircularArrowButton
           onClick={onPrevious}
           progress={currentStep / (totalSteps - 1)}
-          className="mr-4"
+          className="mr-10"
         />
         <SectionHeading subheading="Enter social media information">
           Let's create your DAO (3/3)

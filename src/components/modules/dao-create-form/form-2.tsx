@@ -44,28 +44,37 @@ const Form2: React.FC<Form2Props> = ({
     },
     validationSchema: toFormikValidationSchema(validationSchema),
     onSubmit: (values) => {
-      onNext({
-        ...initialData,
-        ...values,
-      });
+      onNext(values);
     },
   });
 
+  const handleSubmit = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!formik.isValid) {
+      // Touch all fields to show validation errors
+      Object.keys(formik.values).forEach((field) => {
+        formik.setFieldTouched(field, true);
+      });
+      return;
+    }
+    onNext(formik.values);
+  };
+
   return (
-    <div className="flex-1 space-y-2 md:space-y-4 mt-10 min-w-sm max-w-md">
+    <div className="flex-1 space-y-2 md:space-y-4 min-w-sm max-w-md">
       <div className="flex items-center">
         <CircularArrowButton
           onClick={onPrevious}
           progress={currentStep / (totalSteps - 1)}
-          className="mr-4"
+          className="mr-10"
         />
         <SectionHeading subheading="Enter your fund details">
-          Let's create your DAO (2/4)
+          Let's create your DAO (2/3)
         </SectionHeading>
       </div>
 
       <form onSubmit={formik.handleSubmit} className="space-y-4">
-        <div className="space-y-4">
+        <div className="space-y-4 w-full">
           <CustomInput
             name="fundName"
             label="Fund Name"
@@ -92,7 +101,12 @@ const Form2: React.FC<Form2Props> = ({
           />
         </div>
 
-        <CustomButton height="tall" type="submit" className="w-full">
+        <CustomButton
+          height="tall"
+          onClick={handleSubmit}
+          type="button"
+          className="w-full"
+        >
           Next
         </CustomButton>
       </form>
